@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 
 class Account:
@@ -38,19 +39,28 @@ class Account:
 
 
 class BankManager:
-    def __init__(self, accounts, file_path):
-        self.accounts = accounts
-        self.file_path = Path(file_path)
+    FILE_PATH = Path('accounts.json')
 
-    def save_accounts(self):
-        pass
+    def __init__(self, accounts=None):
+        self.accounts = accounts if accounts is not None else []
+        self.load_accounts()
 
     def load_accounts(self):
-        pass
+        with open(self.FILE_PATH, 'r') as af:
+            try:
+                data = json.load(af)
+                loaded_data = [Account.from_dict(d) for d in data]
+                self.accounts.extend(loaded_data)
+            except json.JSONDecodeError:
+                self.accounts.clear()
+
+    def save_accounts(self):
+        with open(self.FILE_PATH, 'w') as af:
+            json.dump([acc.to_dict() for acc in self.accounts], af, indent=4)
 
 
-acc = Account(1, 'Jim', 200)
-acc.deposit(20)
-acc.withdraw(50)
-print(acc.balance)
+acc1 = Account(1, 'Jim', 200)
+acc2 = Account(2, 'John', 250)
 
+bm = BankManager([acc1, acc2])
+bm.save_accounts()
