@@ -42,8 +42,14 @@ class BankManager:
     FILE_PATH = Path('accounts.json')
 
     def __init__(self, accounts=None):
-        self.accounts = accounts if accounts is not None else []
+        self.accounts = []
         self.load_accounts()
+
+        if accounts:
+            existing_numbers = {acc.account_number for acc in self.accounts}
+            for acc in accounts:
+                if acc.account_number not in existing_numbers:
+                    self.accounts.append(acc)
 
     def load_accounts(self):
         if self.FILE_PATH.exists():
@@ -64,6 +70,7 @@ class BankManager:
 
 acc1 = Account(1, 'Jim', 200)
 acc2 = Account(2, 'John', 250)
+acc3 = Account(2, 'Jack', 300)
 
-bm = BankManager([acc1, acc2])
+bm = BankManager([acc1, acc2, acc3])
 bm.save_accounts()
