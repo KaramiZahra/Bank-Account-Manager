@@ -46,13 +46,16 @@ class BankManager:
         self.load_accounts()
 
     def load_accounts(self):
-        with open(self.FILE_PATH, 'r') as af:
-            try:
-                data = json.load(af)
-                loaded_data = [Account.from_dict(d) for d in data]
-                self.accounts.extend(loaded_data)
-            except json.JSONDecodeError:
-                self.accounts.clear()
+        if self.FILE_PATH.exists():
+            with open(self.FILE_PATH, 'r') as af:
+                try:
+                    data = json.load(af)
+                    loaded_data = [Account.from_dict(d) for d in data]
+                    self.accounts.extend(loaded_data)
+                except json.JSONDecodeError:
+                    self.accounts.clear()
+        else:
+            self.FILE_PATH.touch()
 
     def save_accounts(self):
         with open(self.FILE_PATH, 'w') as af:
