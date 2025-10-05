@@ -42,14 +42,8 @@ class BankManager:
     FILE_PATH = Path('accounts.json')
 
     def __init__(self, accounts=None):
-        self.accounts = []
+        self.accounts = accounts if accounts is not None else []
         self.load_accounts()
-
-        if accounts:
-            existing_numbers = {acc.account_number for acc in self.accounts}
-            for acc in accounts:
-                if acc.account_number not in existing_numbers:
-                    self.accounts.append(acc)
 
     def load_accounts(self):
         if self.FILE_PATH.exists():
@@ -67,10 +61,58 @@ class BankManager:
         with open(self.FILE_PATH, 'w') as af:
             json.dump([acc.to_dict() for acc in self.accounts], af, indent=4)
 
+    def create_account(self):
+        acc_number = input("Enter your account number: ")
+        acc_name = input("Enter your account name: ")
 
-acc1 = Account(1, 'Jim', 200)
-acc2 = Account(2, 'John', 250)
-acc3 = Account(2, 'Jack', 300)
+        while True:
+            try:
+                acc_balance = float(input("Enter your account balance: "))
+                break
+            except ValueError:
+                print("Balance must be a number.")
 
-bm = BankManager([acc1, acc2, acc3])
-bm.save_accounts()
+        new_acc = Account(acc_number, acc_name, acc_balance)
+
+        existing_numbers = {acc.account_number for acc in self.accounts}
+        if new_acc.account_number in existing_numbers:
+            print("\nAccount number already exists.")
+        else:
+            self.accounts.append(new_acc)
+            print("\nAccount successfully created.")
+
+    def menu(self):
+        while True:
+            print("\n---Bank Account Manager---\n")
+            print("1.Create Account")
+            print("2.Deposit")
+            print("3.Withdraw")
+            print("4.Transfer")
+            print("5.Show Accounts")
+            print("6.Save and Exit")
+
+            user_input = input("Choose an option(1-6): ")
+
+            if user_input == '1':
+                self.create_account()
+            elif user_input == '2':
+                pass
+            elif user_input == '3':
+                pass
+            elif user_input == '4':
+                pass
+            elif user_input == '5':
+                pass
+            elif user_input == '6':
+                self.save_accounts()
+                break
+            else:
+                print("Invalid input.")
+
+
+if __name__ == "__main__":
+    bm = BankManager()
+    bm.menu()
+
+#   for acc in bm.accounts:
+#       print(vars(acc))
