@@ -82,22 +82,40 @@ class BankManager:
             print("Account successfully created.")
 
     def deposit_amount(self):
-        acc_deposit_number = input("Enter your account number: ").strip()
+        acc_number = input("Enter your account number: ").strip()
 
         acc = next(
-            (acc for acc in self.accounts if acc.account_number == acc_deposit_number), None)
+            (acc for acc in self.accounts if acc.account_number == acc_number), None)
         if not acc:
             print("Account not found.")
             return
 
         while True:
             try:
-                acc_deposit_amount = float(input("Enter deposit amount: "))
-                acc.deposit(acc_deposit_amount)
+                amount = float(input("Enter deposit amount: "))
+                acc.deposit(amount)
                 print(f"Deposit successful. New balance: {acc.balance}")
                 break
-            except ValueError:
-                print("Deposit must be a number.")
+            except ValueError as err:
+                print(f"Deposit failed: {err}")
+
+    def withdraw_amount(self):
+        acc_number = input("Enter your account number: ").strip()
+
+        acc = next(
+            (acc for acc in self.accounts if acc.account_number == acc_number), None)
+        if not acc:
+            print("Account not found.")
+            return
+
+        while True:
+            try:
+                amount = float(input("Enter withdraw amount: "))
+                acc.withdraw(amount)
+                print(f"Withdraw successful. New balance: {acc.balance}")
+                break
+            except ValueError as err:
+                print(f"Withdraw failed: {err}")
 
     def menu(self):
         while True:
@@ -116,7 +134,7 @@ class BankManager:
             elif user_input == '2':
                 self.deposit_amount()
             elif user_input == '3':
-                pass
+                self.withdraw_amount()
             elif user_input == '4':
                 pass
             elif user_input == '5':
