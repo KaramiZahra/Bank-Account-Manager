@@ -62,8 +62,8 @@ class BankManager:
             json.dump([acc.to_dict() for acc in self.accounts], af, indent=4)
 
     def create_account(self):
-        acc_number = input("Enter your account number: ")
-        acc_name = input("Enter your account name: ")
+        acc_number = input("Enter your account number: ").strip()
+        acc_name = input("Enter your account name: ").strip()
 
         while True:
             try:
@@ -76,10 +76,28 @@ class BankManager:
 
         existing_numbers = {acc.account_number for acc in self.accounts}
         if new_acc.account_number in existing_numbers:
-            print("\nAccount number already exists.")
+            print("Account number already exists.")
         else:
             self.accounts.append(new_acc)
-            print("\nAccount successfully created.")
+            print("Account successfully created.")
+
+    def deposit_amount(self):
+        acc_deposit_number = input("Enter your account number: ").strip()
+
+        acc = next(
+            (acc for acc in self.accounts if acc.account_number == acc_deposit_number), None)
+        if not acc:
+            print("Account not found.")
+            return
+
+        while True:
+            try:
+                acc_deposit_amount = float(input("Enter deposit amount: "))
+                acc.deposit(acc_deposit_amount)
+                print(f"Deposit successful. New balance: {acc.balance}")
+                break
+            except ValueError:
+                print("Deposit must be a number.")
 
     def menu(self):
         while True:
@@ -96,7 +114,7 @@ class BankManager:
             if user_input == '1':
                 self.create_account()
             elif user_input == '2':
-                pass
+                self.deposit_amount()
             elif user_input == '3':
                 pass
             elif user_input == '4':
