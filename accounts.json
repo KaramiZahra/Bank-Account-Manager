@@ -2,12 +2,12 @@
     {
         "account_number": "1",
         "holder_name": "Tom",
-        "balance": 670.0
+        "balance": 640.0
     },
     {
         "account_number": "2",
         "holder_name": "Adam",
-        "balance": 160.0
+        "balance": 190.0
     },
     {
         "account_number": "3",

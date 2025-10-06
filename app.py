@@ -117,6 +117,29 @@ class BankManager:
             except ValueError as err:
                 print(f"Withdraw failed: {err}")
 
+    def transfer(self):
+        src_number = input("Enter source account number: ").strip()
+        dst_number = input("Enter destination account number: ").strip()
+
+        src_acc = next(
+            (acc for acc in self.accounts if acc.account_number == src_number), None)
+        dst_acc = next(
+            (acc for acc in self.accounts if acc.account_number == dst_number), None)
+
+        if src_acc and dst_acc:
+            while True:
+                try:
+                    transfer_amount = float(input("Enter transfer amount: "))
+                    src_acc.withdraw(transfer_amount)
+                    dst_acc.deposit(transfer_amount)
+                    print(
+                        f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
+                    break
+                except ValueError as err:
+                    print(f"Transfer failed: {err}")
+        else:
+            print("Accounts not found.")
+
     def menu(self):
         while True:
             print("\n---Bank Account Manager---\n")
@@ -136,7 +159,7 @@ class BankManager:
             elif user_input == '3':
                 self.withdraw_amount()
             elif user_input == '4':
-                pass
+                self.transfer()
             elif user_input == '5':
                 pass
             elif user_input == '6':
