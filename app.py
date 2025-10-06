@@ -57,6 +57,7 @@ class BankManager:
                     self.accounts.clear()
         else:
             self.FILE_PATH.touch()
+            self.accounts = []
 
     def save_accounts(self):
         with open(self.FILE_PATH, 'w') as af:
@@ -150,7 +151,7 @@ class BankManager:
             return
 
         print(tabulate([acc.to_dict() for acc in self.accounts],
-                       headers="keys", tablefmt="fancy_grid", colalign=("center", "left", "left")))
+                       headers="keys", tablefmt="fancy_grid", colalign=("center", "left", "right")))
 
     def menu(self):
         while True:
@@ -164,21 +165,16 @@ class BankManager:
 
             user_input = input("Choose an option(1-6): ")
 
-            if user_input == '1':
-                self.create_account()
-            elif user_input == '2':
-                self.deposit_amount()
-            elif user_input == '3':
-                self.withdraw_amount()
-            elif user_input == '4':
-                self.transfer()
-            elif user_input == '5':
-                self.show_accounts()
-            elif user_input == '6':
-                self.save_accounts()
-                break
-            else:
-                print("Invalid input.")
+            match user_input:
+                case '1': self.create_account()
+                case '2': self.deposit_amount()
+                case '3': self.withdraw_amount()
+                case '4': self.transfer()
+                case '5': self.show_accounts()
+                case '6':
+                    self.save_accounts()
+                    break
+                case _: print("Invalid input.")
 
 
 if __name__ == "__main__":
