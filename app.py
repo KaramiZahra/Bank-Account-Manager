@@ -153,6 +153,17 @@ class BankManager:
         print(tabulate([acc.to_dict() for acc in self.accounts],
                        headers="keys", tablefmt="fancy_grid", colalign=("center", "left", "right")))
 
+    def delete_account(self):
+        acc_number = input("Enter account number: ")
+
+        acc = self.get_account(acc_number)
+        if not acc:
+            print("Account not found.")
+            return
+
+        self.accounts.remove(acc)
+        print("Account successfully deleted.")
+
     def menu(self):
         while True:
             print("\n---Bank Account Manager---\n")
@@ -161,7 +172,8 @@ class BankManager:
             print("3.Withdraw")
             print("4.Transfer")
             print("5.Show Accounts")
-            print("6.Save and Exit")
+            print("6.Delete Account")
+            print("7.Save and Exit")
 
             user_input = input("Choose an option(1-6): ")
 
@@ -171,7 +183,8 @@ class BankManager:
                 case '3': self.withdraw_amount()
                 case '4': self.transfer()
                 case '5': self.show_accounts()
-                case '6':
+                case '6': self.delete_account()
+                case '7':
                     self.save_accounts()
                     break
                 case _: print("Invalid input.")

@@ -5,11 +5,6 @@
         "balance": 640.0
     },
     {
-        "account_number": "2",
-        "holder_name": "Adam",
-        "balance": 190.0
-    },
-    {
         "account_number": "3",
         "holder_name": "Joe",
         "balance": 420.0
