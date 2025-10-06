@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from tabulate import tabulate
 
 
 class Account:
@@ -140,6 +141,14 @@ class BankManager:
         else:
             print("Accounts not found.")
 
+    def show_accounts(self):
+        if not self.accounts:
+            print("No accounts available.")
+            return
+
+        print(tabulate([acc.to_dict() for acc in self.accounts],
+                       headers="keys", tablefmt="fancy_grid", colalign=("center", "left", "left")))
+
     def menu(self):
         while True:
             print("\n---Bank Account Manager---\n")
@@ -161,7 +170,7 @@ class BankManager:
             elif user_input == '4':
                 self.transfer()
             elif user_input == '5':
-                pass
+                self.show_accounts()
             elif user_input == '6':
                 self.save_accounts()
                 break
