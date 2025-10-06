@@ -82,11 +82,13 @@ class BankManager:
             self.accounts.append(new_acc)
             print("Account successfully created.")
 
+    def get_account(self, acc_number):
+        return next((acc for acc in self.accounts if acc.account_number == acc_number), None)
+
     def deposit_amount(self):
         acc_number = input("Enter your account number: ").strip()
 
-        acc = next(
-            (acc for acc in self.accounts if acc.account_number == acc_number), None)
+        acc = self.get_account(acc_number)
         if not acc:
             print("Account not found.")
             return
@@ -103,8 +105,7 @@ class BankManager:
     def withdraw_amount(self):
         acc_number = input("Enter your account number: ").strip()
 
-        acc = next(
-            (acc for acc in self.accounts if acc.account_number == acc_number), None)
+        acc = self.get_account(acc_number)
         if not acc:
             print("Account not found.")
             return
@@ -122,10 +123,12 @@ class BankManager:
         src_number = input("Enter source account number: ").strip()
         dst_number = input("Enter destination account number: ").strip()
 
-        src_acc = next(
-            (acc for acc in self.accounts if acc.account_number == src_number), None)
-        dst_acc = next(
-            (acc for acc in self.accounts if acc.account_number == dst_number), None)
+        if src_number == dst_number:
+            print("Source and destination accounts cannot be the same.")
+            return
+
+        src_acc = self.get_account(src_number)
+        dst_acc = self.get_account(dst_number)
 
         if src_acc and dst_acc:
             while True:
@@ -181,6 +184,3 @@ class BankManager:
 if __name__ == "__main__":
     bm = BankManager()
     bm.menu()
-
-#   for acc in bm.accounts:
-#       print(vars(acc))
