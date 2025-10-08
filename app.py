@@ -80,6 +80,14 @@ class CheckingAccount(Account):
         data['overdraft_limit'] = self.overdraft_limit
         return data
 
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive.")
+        if amount > self.balance + self.overdraft_limit:
+            raise ValueError("Overdraft limit exceeded.")
+        self.balance -= amount
+        return self.balance
+
     @classmethod
     def from_dict(cls, data):
         return cls(

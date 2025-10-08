@@ -1,16 +1,16 @@
 [
     {
-        "account_number": "0",
-        "holder_name": "Walter",
-        "balance": 900.0,
-        "type": "Saving",
-        "interest_rate": 10.0
-    },
-    {
         "account_number": "1",
         "holder_name": "Skyler",
-        "balance": 800.0,
+        "balance": -100.0,
         "type": "Checking",
         "overdraft_limit": 100.0
+    },
+    {
+        "account_number": "0",
+        "holder_name": "Walter",
+        "balance": 590.0,
+        "type": "Saving",
+        "interest_rate": 10.0
     }
 ]
