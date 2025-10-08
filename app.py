@@ -34,12 +34,19 @@ class Account:
 
     @classmethod
     def from_dict(cls, data):
-        return cls(
-            data['account_number'],
-            data['holder_name'],
-            data['balance'],
-            data['type']
-        )
+        acc_type = data.get('type')
+
+        if acc_type == "Saving":
+            return SavingAccount.from_dict(data)
+        elif acc_type == "Checking":
+            return CheckingAccount.from_dict(data)
+        else:
+            return cls(
+                data['account_number'],
+                data['holder_name'],
+                data['balance'],
+                acc_type
+            )
 
 
 class SavingAccount(Account):
@@ -52,6 +59,16 @@ class SavingAccount(Account):
         data['interest_rate'] = self.interest_rate
         return data
 
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            data['account_number'],
+            data['holder_name'],
+            data['balance'],
+            data['type'],
+            data['interest_rate']
+        )
+
 
 class CheckingAccount(Account):
     def __init__(self, account_number, holder_name, balance, type, overdraft_limit):
@@ -62,6 +79,16 @@ class CheckingAccount(Account):
         data = super().to_dict()
         data['overdraft_limit'] = self.overdraft_limit
         return data
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            data['account_number'],
+            data['holder_name'],
+            data['balance'],
+            data['type'],
+            data['overdraft_limit']
+        )
 
 
 class BankManager:
@@ -131,7 +158,6 @@ class BankManager:
                 new_acc = CheckingAccount(
                     acc_number, acc_name, acc_balance, acc_type, acc_overdraft)
                 break
-
             else:
                 print("Invalid account type.")
 
