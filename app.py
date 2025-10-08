@@ -235,8 +235,21 @@ class BankManager:
             print("No accounts available.")
             return
 
-        print(tabulate([acc.to_dict() for acc in self.accounts],
-                       headers="keys", tablefmt="fancy_grid", colalign=("center", "left")))
+        for acc in self.accounts:
+            acc_type = acc.type
+
+            if acc_type == "Saving":
+                print("\n Saving Accounts:")
+                print(tabulate([acc.to_dict()], headers="keys",
+                      tablefmt="fancy_grid", colalign=("center", "left")))
+
+            elif acc_type == "Checking":
+                print("\n Checking Accounts:")
+                print(tabulate([acc.to_dict()], headers="keys",
+                      tablefmt="fancy_grid", colalign=("center", "left")))
+
+            else:
+                print("Invalid type.")
 
     def delete_account(self):
         acc_number = input("Enter account number: ")
