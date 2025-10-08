@@ -145,6 +145,9 @@ class BankManager:
                     try:
                         acc_interest = float(
                             input("Enter interest rate (%): "))
+                        if acc_interest < 0:
+                            print("Interest rate cannot be negative.")
+                            continue
                         break
                     except ValueError:
                         print("Interest rate must be a number.")
