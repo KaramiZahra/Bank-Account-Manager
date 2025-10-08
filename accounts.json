@@ -1,12 +1,14 @@
 [
     {
         "account_number": "1",
-        "holder_name": "Tom",
-        "balance": 640.0
+        "holder_name": "Joe",
+        "balance": 200.0,
+        "type": "Saving"
     },
     {
-        "account_number": "3",
-        "holder_name": "Joe",
-        "balance": 420.0
+        "account_number": "2",
+        "holder_name": "Tom",
+        "balance": 300.0,
+        "type": "Checking"
     }
 ]

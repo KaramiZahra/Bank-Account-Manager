@@ -4,11 +4,11 @@ from tabulate import tabulate
 
 
 class Account:
-    def __init__(self, account_number, holder_name, type, balance):
+    def __init__(self, account_number, holder_name, balance, type):
         self.account_number = account_number
         self.holder_name = holder_name
-        self.type = type
         self.balance = balance
+        self.type = type
 
     def deposit(self, amount):
         if amount <= 0:
@@ -28,8 +28,8 @@ class Account:
         return {
             'account_number': self.account_number,
             'holder_name': self.holder_name,
-            'type': self.type,
-            'balance': self.balance
+            'balance': self.balance,
+            'type': self.type
         }
 
     @classmethod
@@ -37,21 +37,31 @@ class Account:
         return cls(
             data['account_number'],
             data['holder_name'],
-            data['type'],
-            data['balance']
+            data['balance'],
+            data['type']
         )
 
 
 class SavingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, interest_rate):
-        super().__init__(account_number, holder_name, balance)
+    def __init__(self, account_number, holder_name, balance, type, interest_rate):
+        super().__init__(account_number, holder_name, balance, type)
         self.interest_rate = interest_rate
+
+    def to_dict(self):
+        data = super().to_dict()
+        data['interest_rate'] = self.interest_rate
+        return data
 
 
 class CheckingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, overdraft_limit):
-        super().__init__(account_number, holder_name, balance)
+    def __init__(self, account_number, holder_name, balance, type, overdraft_limit):
+        super().__init__(account_number, holder_name, balance, type)
         self.overdraft_limit = overdraft_limit
+
+    def to_dict(self):
+        data = super().to_dict()
+        data['overdraft_limit'] = self.overdraft_limit
+        return data
 
 
 class BankManager:
@@ -82,9 +92,6 @@ class BankManager:
         acc_number = input("Enter your account number: ").strip()
         acc_name = input("Enter your account name: ").strip()
 
-        acc_type = input(
-            "What type of account do you want? 1.Savings Account 2.Checking Account")
-
         while True:
             try:
                 acc_balance = float(input("Enter your account balance: "))
@@ -92,17 +99,41 @@ class BankManager:
             except ValueError:
                 print("Balance must be a number.")
 
-        if acc_type == "1":
-            acc_interest = float(input("Enter interest rate (%): "))
-            new_acc = SavingAccount(
-                acc_number, acc_name, acc_type, acc_balance, acc_interest)
-        elif acc_type == "2":
-            acc_overdraft = float(input("Enter overdraft limit: "))
-            new_acc = CheckingAccount(
-                acc_number, acc_name, acc_type, acc_balance, acc_overdraft)
-        else:
-            print("Invalid account type.")
-            return
+        while True:
+            acc_type = input(
+                "What type (1.Savings Account 2.Checking Account) of account do you want? ")
+
+            if acc_type == "1":
+                acc_type = "Saving"
+
+                while True:
+                    try:
+                        acc_interest = float(
+                            input("Enter interest rate (%): "))
+                        break
+                    except ValueError:
+                        print("Interest rate must be a number.")
+
+                new_acc = SavingAccount(
+                    acc_number, acc_name, acc_balance, acc_type, acc_interest)
+                break
+
+            elif acc_type == "2":
+                acc_type = "Checking"
+
+                while True:
+                    try:
+                        acc_overdraft = float(input("Enter overdraft limit: "))
+                        break
+                    except ValueError:
+                        print("Overdraft limit must be a number.")
+
+                new_acc = CheckingAccount(
+                    acc_number, acc_name, acc_balance, acc_type, acc_overdraft)
+                break
+
+            else:
+                print("Invalid account type.")
 
         existing_numbers = {acc.account_number for acc in self.accounts}
         if new_acc.account_number in existing_numbers:
@@ -179,7 +210,7 @@ class BankManager:
             return
 
         print(tabulate([acc.to_dict() for acc in self.accounts],
-                       headers="keys", tablefmt="fancy_grid", colalign=("center", "left", "right")))
+                       headers="keys", tablefmt="fancy_grid", colalign=("center", "left")))
 
     def delete_account(self):
         acc_number = input("Enter account number: ")
