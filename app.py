@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 from tabulate import tabulate
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Account:
@@ -10,7 +10,7 @@ class Account:
         self.holder_name = holder_name
         self.balance = balance
         self.type = type
-        self.creation_date = creation_date or datetime.now().isoformat()
+        self.creation_date = creation_date or datetime.now().date().isoformat()
 
     def deposit(self, amount):
         if amount <= 0:
@@ -54,13 +54,15 @@ class Account:
 
 
 class SavingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, type, creation_date, interest_rate):
+    def __init__(self, account_number, holder_name, balance, type, creation_date, interest_rate, last_interest_date):
         super().__init__(account_number, holder_name, balance, type, creation_date)
         self.interest_rate = interest_rate
+        self.last_interest_date = last_interest_date
 
     def to_dict(self):
         data = super().to_dict()
         data['interest_rate'] = self.interest_rate
+        data['last_interest_date'] = self.last_interest_date
         return data
 
     @classmethod
@@ -71,11 +73,14 @@ class SavingAccount(Account):
             data['balance'],
             data['type'],
             data['creation_date'],
-            data['interest_rate']
+            data['interest_rate'],
+            data['last_interest_date']
         )
 
     def apply_interest(self):
-        self.balance += self.balance * self.interest_rate / 100
+        if datetime.now().date() - datetime.fromisoformat(self.last_interest_date).date() >= timedelta(days=365):
+            self.balance += self.balance * self.interest_rate / 100
+            self.last_interest_date = datetime.now().date().isoformat()
 
 
 class CheckingAccount(Account):
@@ -122,6 +127,11 @@ class BankManager:
                     data = json.load(af)
                     loaded_data = [Account.from_dict(d) for d in data]
                     self.accounts.extend(loaded_data)
+
+                    for acc in self.accounts:
+                        if isinstance(acc, SavingAccount):
+                            acc.apply_interest()
+
                 except json.JSONDecodeError:
                     self.accounts.clear()
         else:
@@ -161,8 +171,8 @@ class BankManager:
                     except ValueError:
                         print("Interest rate must be a number.")
 
-                new_acc = SavingAccount(
-                    acc_number, acc_name, acc_balance, acc_type, datetime.now().isoformat(), acc_interest)
+                new_acc = SavingAccount(acc_number, acc_name, acc_balance, acc_type, datetime.now(
+                ).date().isoformat(), acc_interest, datetime.now().date().isoformat())
                 break
 
             elif acc_type == "2":
@@ -176,7 +186,7 @@ class BankManager:
                         print("Overdraft limit must be a number.")
 
                 new_acc = CheckingAccount(
-                    acc_number, acc_name, acc_balance, acc_type, datetime.now().isoformat(), acc_overdraft)
+                    acc_number, acc_name, acc_balance, acc_type, datetime.now().date().isoformat(), acc_overdraft)
                 break
             else:
                 print("Invalid account type.")
