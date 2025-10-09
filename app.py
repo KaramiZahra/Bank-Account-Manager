@@ -1,14 +1,16 @@
 from pathlib import Path
 import json
 from tabulate import tabulate
+from datetime import datetime
 
 
 class Account:
-    def __init__(self, account_number, holder_name, balance, type):
+    def __init__(self, account_number, holder_name, balance, type, creation_date):
         self.account_number = account_number
         self.holder_name = holder_name
         self.balance = balance
         self.type = type
+        self.creation_date = creation_date or datetime.now().isoformat()
 
     def deposit(self, amount):
         if amount <= 0:
@@ -29,7 +31,8 @@ class Account:
             'account_number': self.account_number,
             'holder_name': self.holder_name,
             'balance': self.balance,
-            'type': self.type
+            'type': self.type,
+            'creation_date': self.creation_date
         }
 
     @classmethod
@@ -45,13 +48,14 @@ class Account:
                 data['account_number'],
                 data['holder_name'],
                 data['balance'],
-                acc_type
+                acc_type,
+                datetime.now().fromisoformat(data['creation_date']).date(),
             )
 
 
 class SavingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, type, interest_rate):
-        super().__init__(account_number, holder_name, balance, type)
+    def __init__(self, account_number, holder_name, balance, type, creation_date, interest_rate):
+        super().__init__(account_number, holder_name, balance, type, creation_date)
         self.interest_rate = interest_rate
 
     def to_dict(self):
@@ -66,27 +70,23 @@ class SavingAccount(Account):
             data['holder_name'],
             data['balance'],
             data['type'],
+            datetime.now().fromisoformat(data['creation_date']).date(),
             data['interest_rate']
         )
 
+    def apply_interest(self):
+        self.balance += self.balance * self.interest_rate / 100
+
 
 class CheckingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, type, overdraft_limit):
-        super().__init__(account_number, holder_name, balance, type)
+    def __init__(self, account_number, holder_name, balance, type, creation_date, overdraft_limit):
+        super().__init__(account_number, holder_name, balance, type, creation_date)
         self.overdraft_limit = overdraft_limit
 
     def to_dict(self):
         data = super().to_dict()
         data['overdraft_limit'] = self.overdraft_limit
         return data
-
-    def withdraw(self, amount):
-        if amount <= 0:
-            raise ValueError("Withdrawal amount must be positive.")
-        if amount > self.balance + self.overdraft_limit:
-            raise ValueError("Overdraft limit exceeded.")
-        self.balance -= amount
-        return self.balance
 
     @classmethod
     def from_dict(cls, data):
@@ -95,8 +95,17 @@ class CheckingAccount(Account):
             data['holder_name'],
             data['balance'],
             data['type'],
+            datetime.now().fromisoformat(data['creation_date']).date(),
             data['overdraft_limit']
         )
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive.")
+        if amount > self.balance + self.overdraft_limit:
+            raise ValueError("Overdraft limit exceeded.")
+        self.balance -= amount
+        return self.balance
 
 
 class BankManager:
@@ -153,7 +162,7 @@ class BankManager:
                         print("Interest rate must be a number.")
 
                 new_acc = SavingAccount(
-                    acc_number, acc_name, acc_balance, acc_type, acc_interest)
+                    acc_number, acc_name, acc_balance, acc_type, datetime.now().isoformat(), acc_interest)
                 break
 
             elif acc_type == "2":
@@ -167,7 +176,7 @@ class BankManager:
                         print("Overdraft limit must be a number.")
 
                 new_acc = CheckingAccount(
-                    acc_number, acc_name, acc_balance, acc_type, acc_overdraft)
+                    acc_number, acc_name, acc_balance, acc_type, datetime.now().isoformat(), acc_overdraft)
                 break
             else:
                 print("Invalid account type.")
