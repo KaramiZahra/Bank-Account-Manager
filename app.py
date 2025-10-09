@@ -49,7 +49,7 @@ class Account:
                 data['holder_name'],
                 data['balance'],
                 acc_type,
-                datetime.now().fromisoformat(data['creation_date']).date(),
+                data['creation_date'],
             )
 
 
@@ -70,7 +70,7 @@ class SavingAccount(Account):
             data['holder_name'],
             data['balance'],
             data['type'],
-            datetime.now().fromisoformat(data['creation_date']).date(),
+            data['creation_date'],
             data['interest_rate']
         )
 
@@ -95,7 +95,7 @@ class CheckingAccount(Account):
             data['holder_name'],
             data['balance'],
             data['type'],
-            datetime.now().fromisoformat(data['creation_date']).date(),
+            data['creation_date'],
             data['overdraft_limit']
         )
 
