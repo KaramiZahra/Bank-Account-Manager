@@ -1,0 +1,34 @@
+[
+    {
+        "account_number": "1",
+        "holder_name": "one",
+        "balance": 200.0,
+        "type": "Saving",
+        "creation_date": "2025-10-09T12:43:07.214806",
+        "interest_rate": 10.0
+    },
+    {
+        "account_number": "2",
+        "holder_name": "two",
+        "balance": 300.0,
+        "type": "Checking",
+        "creation_date": "2025-10-09T12:43:26.024427",
+        "overdraft_limit": 100.0
+    },
+    {
+        "account_number": "3",
+        "holder_name": "three",
+        "balance": 400.0,
+        "type": "Saving",
+        "creation_date": "2025-10-09T12:43:35.282986",
+        "interest_rate": 10.0
+    },
+    {
+        "account_number": "4",
+        "holder_name": "four",
+        "balance": 500.0,
+        "type": "Checking",
+        "creation_date": "2025-10-09T12:43:44.821039",
+        "overdraft_limit": 200.0
+    }
+]
