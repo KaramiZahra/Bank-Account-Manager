@@ -2,19 +2,27 @@
     {
         "account_number": "1",
         "holder_name": "sun",
-        "balance": 240.0,
+        "balance": 200.0,
         "type": "Saving",
-        "creation_date": "2024-10-09",
+        "creation_date": "2025-10-11",
         "interest_rate": 20.0,
-        "last_interest_date": "2025-10-09"
+        "last_interest_date": "2025-10-11"
     },
     {
         "account_number": "2",
         "holder_name": "moon",
-        "balance": 300.0,
+        "balance": 200.0,
+        "type": "Checking",
+        "creation_date": "2025-10-11",
+        "overdraft_limit": 100.0
+    },
+    {
+        "account_number": "3",
+        "holder_name": "flower",
+        "balance": 200.0,
         "type": "Saving",
-        "creation_date": "2025-10-09",
-        "interest_rate": 10.0,
-        "last_interest_date": "2025-10-09"
+        "creation_date": "2025-10-11",
+        "interest_rate": 8.0,
+        "last_interest_date": "2025-10-11"
     }
 ]

@@ -6,11 +6,11 @@ from collections import defaultdict
 
 
 class Account:
-    def __init__(self, account_number, holder_name, balance, type, creation_date):
+    def __init__(self, account_number, holder_name, balance, account_type, creation_date):
         self.account_number = account_number
         self.holder_name = holder_name
         self.balance = balance
-        self.type = type
+        self.account_type = account_type
         self.creation_date = creation_date or datetime.now().date().isoformat()
 
     def deposit(self, amount):
@@ -32,13 +32,13 @@ class Account:
             'account_number': self.account_number,
             'holder_name': self.holder_name,
             'balance': self.balance,
-            'type': self.type,
+            'account_type': self.account_type,
             'creation_date': self.creation_date
         }
 
     @classmethod
     def from_dict(cls, data):
-        acc_type = data.get('type')
+        acc_type = data.get('account_type')
 
         if acc_type == "Saving":
             return SavingAccount.from_dict(data)
@@ -55,8 +55,8 @@ class Account:
 
 
 class SavingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, type, creation_date, interest_rate, last_interest_date):
-        super().__init__(account_number, holder_name, balance, type, creation_date)
+    def __init__(self, account_number, holder_name, balance, account_type, creation_date, interest_rate, last_interest_date):
+        super().__init__(account_number, holder_name, balance, account_type, creation_date)
         self.interest_rate = interest_rate
         self.last_interest_date = last_interest_date
 
@@ -72,7 +72,7 @@ class SavingAccount(Account):
             data['account_number'],
             data['holder_name'],
             data['balance'],
-            data['type'],
+            data['account_type'],
             data['creation_date'],
             data['interest_rate'],
             data['last_interest_date']
@@ -85,8 +85,8 @@ class SavingAccount(Account):
 
 
 class CheckingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, type, creation_date, overdraft_limit):
-        super().__init__(account_number, holder_name, balance, type, creation_date)
+    def __init__(self, account_number, holder_name, balance, account_type, creation_date, overdraft_limit):
+        super().__init__(account_number, holder_name, balance, account_type, creation_date)
         self.overdraft_limit = overdraft_limit
 
     def to_dict(self):
@@ -100,7 +100,7 @@ class CheckingAccount(Account):
             data['account_number'],
             data['holder_name'],
             data['balance'],
-            data['type'],
+            data['account_type'],
             data['creation_date'],
             data['overdraft_limit']
         )
@@ -143,16 +143,23 @@ class BankManager:
         with open(self.FILE_PATH, 'w') as af:
             json.dump([acc.to_dict() for acc in self.accounts], af, indent=4)
 
+    @staticmethod
+    def get_float(prompt):
+        while True:
+            try:
+                value = float(input(prompt))
+                if value <= 0:
+                    print("Value must be positive.")
+                    continue
+                return value
+            except ValueError:
+                print("Invalid number.")
+
     def create_account(self):
         acc_number = input("Enter your account number: ").strip()
         acc_name = input("Enter your account name: ").strip()
 
-        while True:
-            try:
-                acc_balance = float(input("Enter your account balance: "))
-                break
-            except ValueError:
-                print("Balance must be a number.")
+        acc_balance = self.get_float("Enter your account balance: ")
 
         while True:
             acc_type = input(
@@ -161,16 +168,7 @@ class BankManager:
             if acc_type == "1":
                 acc_type = "Saving"
 
-                while True:
-                    try:
-                        acc_interest = float(
-                            input("Enter interest rate (%): "))
-                        if acc_interest < 0:
-                            print("Interest rate cannot be negative.")
-                            continue
-                        break
-                    except ValueError:
-                        print("Interest rate must be a number.")
+                acc_interest = self.get_float("Enter interest rate (%): ")
 
                 new_acc = SavingAccount(acc_number, acc_name, acc_balance, acc_type, datetime.now(
                 ).date().isoformat(), acc_interest, datetime.now().date().isoformat())
@@ -179,12 +177,7 @@ class BankManager:
             elif acc_type == "2":
                 acc_type = "Checking"
 
-                while True:
-                    try:
-                        acc_overdraft = float(input("Enter overdraft limit: "))
-                        break
-                    except ValueError:
-                        print("Overdraft limit must be a number.")
+                acc_overdraft = self.get_float("Enter overdraft limit: ")
 
                 new_acc = CheckingAccount(
                     acc_number, acc_name, acc_balance, acc_type, datetime.now().date().isoformat(), acc_overdraft)
@@ -268,7 +261,7 @@ class BankManager:
 
         grouped = defaultdict(list)
         for acc in self.accounts:
-            grouped[acc.type].append(acc.to_dict())
+            grouped[acc.account_type].append(acc.to_dict())
 
         for acc_type, acc_list in grouped.items():
             print(f"\n {acc_type} Accounts:")
