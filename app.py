@@ -80,8 +80,11 @@ class SavingAccount(Account):
 
     def apply_interest(self):
         if datetime.now().date() - datetime.fromisoformat(self.last_interest_date).date() >= timedelta(days=365):
-            self.balance += self.balance * self.interest_rate / 100
+            interest = self.balance * self.interest_rate / 100
+            self.balance += interest
             self.last_interest_date = datetime.now().date().isoformat()
+            return interest
+        return 0
 
 
 class CheckingAccount(Account):
@@ -117,8 +120,9 @@ class CheckingAccount(Account):
 class BankManager:
     FILE_PATH = Path('accounts.json')
 
-    def __init__(self, accounts=None):
+    def __init__(self, accounts=None, transactions=None):
         self.accounts = accounts if accounts is not None else []
+        self.transactions = transactions if transactions is not None else []
         self.load_accounts()
 
     def load_accounts(self):
@@ -126,22 +130,33 @@ class BankManager:
             with open(self.FILE_PATH, 'r') as af:
                 try:
                     data = json.load(af)
-                    loaded_data = [Account.from_dict(d) for d in data]
+
+                    accounts_data = data.get("accounts", [])
+                    loaded_data = [Account.from_dict(d) for d in accounts_data]
                     self.accounts.extend(loaded_data)
+
+                    transactions_data = data.get("transactions", [])
+                    self.transactions.extend(transactions_data)
 
                     for acc in self.accounts:
                         if isinstance(acc, SavingAccount):
-                            acc.apply_interest()
+                            interest = acc.apply_interest()
+                            if interest > 0:
+                                self._record_transactions(
+                                    acc.account_number, "interest", interest)
 
                 except json.JSONDecodeError:
                     self.accounts.clear()
+                    self.transactions.clear()
         else:
             self.FILE_PATH.touch()
             self.accounts = []
+            self.transactions = []
 
     def save_accounts(self):
         with open(self.FILE_PATH, 'w') as af:
-            json.dump([acc.to_dict() for acc in self.accounts], af, indent=4)
+            json.dump({"accounts": [acc.to_dict(
+            ) for acc in self.accounts], "transactions": self.transactions}, af, indent=4)
 
     @staticmethod
     def _get_float(prompt):
@@ -212,6 +227,8 @@ class BankManager:
             except ValueError as err:
                 print(f"Deposit failed: {err}")
 
+        self._record_transactions(acc_number, "deposit", amount)
+
     def withdraw_amount(self):
         acc_number = input("Enter your account number: ").strip()
 
@@ -229,6 +246,8 @@ class BankManager:
             except ValueError as err:
                 print(f"Withdraw failed: {err}")
 
+        self._record_transactions(acc_number, "withdraw", amount)
+
     def transfer(self):
         src_number = input("Enter source account number: ").strip()
         dst_number = input("Enter destination account number: ").strip()
@@ -245,7 +264,11 @@ class BankManager:
                 try:
                     transfer_amount = float(input("Enter transfer amount: "))
                     src_acc.withdraw(transfer_amount)
+                    self._record_transactions(
+                        src_number, "withdraw", transfer_amount)
                     dst_acc.deposit(transfer_amount)
+                    self._record_transactions(
+                        dst_number, "deposit", transfer_amount)
                     print(
                         f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
                     break
@@ -279,6 +302,20 @@ class BankManager:
         self.accounts.remove(acc)
         print("Account successfully deleted.")
 
+    def _record_transactions(self, acc_number, tran_type, amount):
+        new_tran = {
+            'account_number': acc_number,
+            'transaction_type': tran_type,
+            'amount': amount,
+            'date': datetime.now().date().isoformat()
+        }
+        self.transactions.append(new_tran)
+
+    def transactions_log(self):
+        print("\n Transactions history: ")
+        print(tabulate(self.transactions, headers="keys",
+              tablefmt="fancy_grid", colalign=("center", "left")))
+
     def menu(self):
         while True:
             print("\n---Bank Account Manager---\n")
@@ -288,9 +325,10 @@ class BankManager:
             print("4.Transfer")
             print("5.Show Accounts")
             print("6.Delete Account")
-            print("7.Save and Exit")
+            print("7.Transactions log")
+            print("8.Save and Exit")
 
-            user_input = input("Choose an option(1-7): ")
+            user_input = input("Choose an option(1-8): ")
 
             match user_input:
                 case '1': self.create_account()
@@ -299,7 +337,8 @@ class BankManager:
                 case '4': self.transfer()
                 case '5': self.show_accounts()
                 case '6': self.delete_account()
-                case '7':
+                case '7': self.transactions_log()
+                case '8':
                     self.save_accounts()
                     break
                 case _: print("Invalid input.")
