@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 from tabulate import tabulate
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 
 class Account:
@@ -265,19 +266,13 @@ class BankManager:
             print("No accounts available.")
             return
 
-        savings = [acc.to_dict()
-                   for acc in self.accounts if acc.type == "Saving"]
-        checkings = [acc.to_dict()
-                     for acc in self.accounts if acc.type == "Checking"]
+        grouped = defaultdict(list)
+        for acc in self.accounts:
+            grouped[acc.type].append(acc.to_dict())
 
-        if savings:
-            print("\n Saving Accounts:")
-            print(tabulate(savings, headers="keys",
-                  tablefmt="fancy_grid", colalign=("center", "left")))
-
-        if checkings:
-            print("\n Checking Accounts: ")
-            print(tabulate(checkings, headers="keys",
+        for acc_type, acc_list in grouped.items():
+            print(f"\n {acc_type} Accounts:")
+            print(tabulate(acc_list, headers="keys",
                   tablefmt="fancy_grid", colalign=("center", "left")))
 
     def delete_account(self):
