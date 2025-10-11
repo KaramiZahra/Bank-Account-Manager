@@ -144,7 +144,7 @@ class BankManager:
             json.dump([acc.to_dict() for acc in self.accounts], af, indent=4)
 
     @staticmethod
-    def get_float(prompt):
+    def _get_float(prompt):
         while True:
             try:
                 value = float(input(prompt))
@@ -159,7 +159,7 @@ class BankManager:
         acc_number = input("Enter your account number: ").strip()
         acc_name = input("Enter your account name: ").strip()
 
-        acc_balance = self.get_float("Enter your account balance: ")
+        acc_balance = self._get_float("Enter your account balance: ")
 
         while True:
             acc_type = input(
@@ -168,7 +168,7 @@ class BankManager:
             if acc_type == "1":
                 acc_type = "Saving"
 
-                acc_interest = self.get_float("Enter interest rate (%): ")
+                acc_interest = self._get_float("Enter interest rate (%): ")
 
                 new_acc = SavingAccount(acc_number, acc_name, acc_balance, acc_type, datetime.now(
                 ).date().isoformat(), acc_interest, datetime.now().date().isoformat())
@@ -177,7 +177,7 @@ class BankManager:
             elif acc_type == "2":
                 acc_type = "Checking"
 
-                acc_overdraft = self.get_float("Enter overdraft limit: ")
+                acc_overdraft = self._get_float("Enter overdraft limit: ")
 
                 new_acc = CheckingAccount(
                     acc_number, acc_name, acc_balance, acc_type, datetime.now().date().isoformat(), acc_overdraft)
@@ -192,13 +192,13 @@ class BankManager:
             self.accounts.append(new_acc)
             print("Account successfully created.")
 
-    def get_account(self, acc_number):
+    def _get_account(self, acc_number):
         return next((acc for acc in self.accounts if acc.account_number == acc_number), None)
 
     def deposit_amount(self):
         acc_number = input("Enter your account number: ").strip()
 
-        acc = self.get_account(acc_number)
+        acc = self._get_account(acc_number)
         if not acc:
             print("Account not found.")
             return
@@ -215,7 +215,7 @@ class BankManager:
     def withdraw_amount(self):
         acc_number = input("Enter your account number: ").strip()
 
-        acc = self.get_account(acc_number)
+        acc = self._get_account(acc_number)
         if not acc:
             print("Account not found.")
             return
@@ -237,8 +237,8 @@ class BankManager:
             print("Source and destination accounts cannot be the same.")
             return
 
-        src_acc = self.get_account(src_number)
-        dst_acc = self.get_account(dst_number)
+        src_acc = self._get_account(src_number)
+        dst_acc = self._get_account(dst_number)
 
         if src_acc and dst_acc:
             while True:
@@ -271,7 +271,7 @@ class BankManager:
     def delete_account(self):
         acc_number = input("Enter account number: ")
 
-        acc = self.get_account(acc_number)
+        acc = self._get_account(acc_number)
         if not acc:
             print("Account not found.")
             return
