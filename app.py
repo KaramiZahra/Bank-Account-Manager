@@ -316,6 +316,19 @@ class BankManager:
         print(tabulate(self.transactions, headers="keys",
               tablefmt="fancy_grid", colalign=("center", "left")))
 
+    def search_account(self):
+        query = input("Enter holder name: ").strip()
+        found = False
+
+        for acc in self.accounts:
+            if acc.holder_name.lower().startswith(query):
+                print(tabulate([acc.to_dict()], headers="keys",
+                      tablefmt="fancy_grid", colalign=("center", "left")))
+                found = True
+
+        if not found:
+            print("Account not found.")
+
     def menu(self):
         while True:
             print("\n---Bank Account Manager---\n")
@@ -326,9 +339,10 @@ class BankManager:
             print("5.Show Accounts")
             print("6.Delete Account")
             print("7.Transactions log")
-            print("8.Save and Exit")
+            print("8.Search for an account")
+            print("9.Save and Exit")
 
-            user_input = input("Choose an option(1-8): ")
+            user_input = input("Choose an option(1-9): ")
 
             match user_input:
                 case '1': self.create_account()
@@ -338,7 +352,8 @@ class BankManager:
                 case '5': self.show_accounts()
                 case '6': self.delete_account()
                 case '7': self.transactions_log()
-                case '8':
+                case '8': self.search_account()
+                case '9':
                     self.save_accounts()
                     break
                 case _: print("Invalid input.")
