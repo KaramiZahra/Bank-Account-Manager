@@ -38,7 +38,7 @@ cd Bank-Account-Manager
 
 2. Make sure you have Python 3 installed.
 
-3. Install required dependencies (only `tabulate`):
+3. Install required dependencies:
 
 ```bash
 pip install tabulate bcrypt
@@ -69,11 +69,13 @@ Follow the menu prompts to interact with the app:
 
 ## File Structure
 
+```bash
 Bank-Account-Manager/
 │
 ├── app.py              # Main Python script
 ├── accounts.json       # Data storage
 └── README.md           # This documentation
+```
 
 ## Notes
 
