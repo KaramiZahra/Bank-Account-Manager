@@ -232,55 +232,48 @@ class BankManager:
     def _get_account(self, acc_number):
         return next((acc for acc in self.accounts if acc.account_number == acc_number), None)
 
-    def deposit_amount(self):
-        acc_number = input("Enter your account number: ").strip()
+    @staticmethod
+    def _requires_authentication(func):
+        def wrapper(self, *args, **kwargs):
+            acc_number = input("Enter your account number: ").strip()
+            acc = self._get_account(acc_number)
+            if not acc:
+                print("Account not found.")
+                return
 
-        acc = self._get_account(acc_number)
-        if not acc:
-            print("Account not found.")
-            return
+            acc_pass = input("Enter your account password: ").strip()
+            if not acc.verify_password(acc_pass):
+                print("Access denied.")
+                return
 
-        acc_pass = input("Enter your account password: ").strip()
-        if acc.verify_password(acc_pass):
+            return func(self, acc, *args, **kwargs)
+        return wrapper
 
-            while True:
-                try:
-                    amount = float(input("Enter deposit amount: "))
-                    acc.deposit(amount)
-                    print(f"Deposit successful. New balance: {acc.balance}")
-                    break
-                except ValueError as err:
-                    print(f"Deposit failed: {err}")
+    @_requires_authentication
+    def deposit_amount(self, acc):
+        while True:
+            try:
+                amount = float(input("Enter deposit amount: "))
+                acc.deposit(amount)
+                print(f"Deposit successful. New balance: {acc.balance}")
+                self._record_transactions(
+                    acc.account_number, "deposit", amount)
+                break
+            except ValueError as err:
+                print(f"Deposit failed: {err}")
 
-            self._record_transactions(acc_number, "deposit", amount)
-
-        else:
-            print("Access denied.")
-
-    def withdraw_amount(self):
-        acc_number = input("Enter your account number: ").strip()
-
-        acc = self._get_account(acc_number)
-        if not acc:
-            print("Account not found.")
-            return
-
-        acc_pass = input("Enter your account password: ").strip()
-        if acc.verify_password(acc_pass):
-
-            while True:
-                try:
-                    amount = float(input("Enter withdraw amount: "))
-                    acc.withdraw(amount)
-                    print(f"Withdraw successful. New balance: {acc.balance}")
-                    break
-                except ValueError as err:
-                    print(f"Withdraw failed: {err}")
-
-            self._record_transactions(acc_number, "withdraw", amount)
-
-        else:
-            print("Access denied.")
+    @_requires_authentication
+    def withdraw_amount(self, acc):
+        while True:
+            try:
+                amount = float(input("Enter withdraw amount: "))
+                acc.withdraw(amount)
+                print(f"Withdraw successful. New balance: {acc.balance}")
+                self._record_transactions(
+                    acc.account_number, "withdraw", amount)
+                break
+            except ValueError as err:
+                print(f"Withdraw failed: {err}")
 
     def transfer(self):
         src_number = input("Enter source account number: ").strip()
@@ -293,30 +286,30 @@ class BankManager:
         src_acc = self._get_account(src_number)
         dst_acc = self._get_account(dst_number)
 
-        if src_acc and dst_acc:
-            acc_pass = input("Enter your account password: ").strip()
-            if src_acc.verify_password(acc_pass):
-
-                while True:
-                    try:
-                        transfer_amount = float(
-                            input("Enter transfer amount: "))
-                        src_acc.withdraw(transfer_amount)
-                        self._record_transactions(
-                            src_number, "withdraw", transfer_amount)
-                        dst_acc.deposit(transfer_amount)
-                        self._record_transactions(
-                            dst_number, "deposit", transfer_amount)
-                        print(
-                            f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
-                        break
-                    except ValueError as err:
-                        print(f"Transfer failed: {err}")
-
-            else:
-                print("Access denied.")
-        else:
+        if not src_acc or not dst_acc:
             print("Accounts not found.")
+            return
+
+        acc_pass = input("Enter your account password: ").strip()
+
+        if src_acc.verify_password(acc_pass):
+            while True:
+                try:
+                    transfer_amount = float(
+                        input("Enter transfer amount: "))
+                    src_acc.withdraw(transfer_amount)
+                    self._record_transactions(
+                        src_number, "withdraw", transfer_amount)
+                    dst_acc.deposit(transfer_amount)
+                    self._record_transactions(
+                        dst_number, "deposit", transfer_amount)
+                    print(
+                        f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
+                    break
+                except ValueError as err:
+                    print(f"Transfer failed: {err}")
+        else:
+            print("Access denied.")
 
     def show_accounts(self):
         if not self.accounts:
