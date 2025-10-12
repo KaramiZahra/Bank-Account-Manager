@@ -3,15 +3,17 @@ import json
 from tabulate import tabulate
 from datetime import datetime, timedelta
 from collections import defaultdict
+import bcrypt
 
 
 class Account:
-    def __init__(self, account_number, holder_name, balance, account_type, creation_date):
+    def __init__(self, account_number, holder_name, balance, account_type, creation_date, account_password):
         self.account_number = account_number
         self.holder_name = holder_name
         self.balance = balance
         self.account_type = account_type
         self.creation_date = creation_date or datetime.now().date().isoformat()
+        self.account_password = self._hash_password(account_password)
 
     def deposit(self, amount):
         if amount <= 0:
@@ -33,7 +35,8 @@ class Account:
             'holder_name': self.holder_name,
             'balance': self.balance,
             'account_type': self.account_type,
-            'creation_date': self.creation_date
+            'creation_date': self.creation_date,
+            'account_password': self.account_password
         }
 
     @classmethod
@@ -51,12 +54,26 @@ class Account:
                 data['balance'],
                 acc_type,
                 data['creation_date'],
+                data['account_password']
             )
+
+    def _hash_password(self, password):
+        if not password:
+            return None
+
+        if isinstance(password, str) and password.startswith("$2") and len(password) > 50:
+            return password
+
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    def verify_password(self, password):
+        return bcrypt.checkpw(password.encode(), self.account_password.encode())
 
 
 class SavingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, account_type, creation_date, interest_rate, last_interest_date):
-        super().__init__(account_number, holder_name, balance, account_type, creation_date)
+    def __init__(self, account_number, holder_name, balance, account_type, creation_date, account_password, interest_rate, last_interest_date):
+        super().__init__(account_number, holder_name, balance,
+                         account_type, creation_date, account_password)
         self.interest_rate = interest_rate
         self.last_interest_date = last_interest_date
 
@@ -74,6 +91,7 @@ class SavingAccount(Account):
             data['balance'],
             data['account_type'],
             data['creation_date'],
+            data['account_password'],
             data['interest_rate'],
             data['last_interest_date']
         )
@@ -88,8 +106,9 @@ class SavingAccount(Account):
 
 
 class CheckingAccount(Account):
-    def __init__(self, account_number, holder_name, balance, account_type, creation_date, overdraft_limit):
-        super().__init__(account_number, holder_name, balance, account_type, creation_date)
+    def __init__(self, account_number, holder_name, balance, account_type, creation_date, account_password, overdraft_limit):
+        super().__init__(account_number, holder_name, balance,
+                         account_type, creation_date, account_password)
         self.overdraft_limit = overdraft_limit
 
     def to_dict(self):
@@ -105,6 +124,7 @@ class CheckingAccount(Account):
             data['balance'],
             data['account_type'],
             data['creation_date'],
+            data['account_password'],
             data['overdraft_limit']
         )
 
@@ -176,6 +196,8 @@ class BankManager:
 
         acc_balance = self._get_float("Enter your account balance: ")
 
+        acc_password = input("Set a password for your account: ").strip()
+
         while True:
             acc_type = input(
                 "What type (1.Savings Account 2.Checking Account) of account do you want? ")
@@ -186,7 +208,7 @@ class BankManager:
                 acc_interest = self._get_float("Enter interest rate (%): ")
 
                 new_acc = SavingAccount(acc_number, acc_name, acc_balance, acc_type, datetime.now(
-                ).date().isoformat(), acc_interest, datetime.now().date().isoformat())
+                ).date().isoformat(), acc_password, acc_interest, datetime.now().date().isoformat())
                 break
 
             elif acc_type == "2":
@@ -195,7 +217,7 @@ class BankManager:
                 acc_overdraft = self._get_float("Enter overdraft limit: ")
 
                 new_acc = CheckingAccount(
-                    acc_number, acc_name, acc_balance, acc_type, datetime.now().date().isoformat(), acc_overdraft)
+                    acc_number, acc_name, acc_balance, acc_type, datetime.now().date().isoformat(), acc_password, acc_overdraft)
                 break
             else:
                 print("Invalid account type.")
@@ -218,16 +240,22 @@ class BankManager:
             print("Account not found.")
             return
 
-        while True:
-            try:
-                amount = float(input("Enter deposit amount: "))
-                acc.deposit(amount)
-                print(f"Deposit successful. New balance: {acc.balance}")
-                break
-            except ValueError as err:
-                print(f"Deposit failed: {err}")
+        acc_pass = input("Enter your account password: ").strip()
+        if acc.verify_password(acc_pass):
 
-        self._record_transactions(acc_number, "deposit", amount)
+            while True:
+                try:
+                    amount = float(input("Enter deposit amount: "))
+                    acc.deposit(amount)
+                    print(f"Deposit successful. New balance: {acc.balance}")
+                    break
+                except ValueError as err:
+                    print(f"Deposit failed: {err}")
+
+            self._record_transactions(acc_number, "deposit", amount)
+
+        else:
+            print("Access denied.")
 
     def withdraw_amount(self):
         acc_number = input("Enter your account number: ").strip()
@@ -237,16 +265,22 @@ class BankManager:
             print("Account not found.")
             return
 
-        while True:
-            try:
-                amount = float(input("Enter withdraw amount: "))
-                acc.withdraw(amount)
-                print(f"Withdraw successful. New balance: {acc.balance}")
-                break
-            except ValueError as err:
-                print(f"Withdraw failed: {err}")
+        acc_pass = input("Enter your account password: ").strip()
+        if acc.verify_password(acc_pass):
 
-        self._record_transactions(acc_number, "withdraw", amount)
+            while True:
+                try:
+                    amount = float(input("Enter withdraw amount: "))
+                    acc.withdraw(amount)
+                    print(f"Withdraw successful. New balance: {acc.balance}")
+                    break
+                except ValueError as err:
+                    print(f"Withdraw failed: {err}")
+
+            self._record_transactions(acc_number, "withdraw", amount)
+
+        else:
+            print("Access denied.")
 
     def transfer(self):
         src_number = input("Enter source account number: ").strip()
@@ -260,20 +294,27 @@ class BankManager:
         dst_acc = self._get_account(dst_number)
 
         if src_acc and dst_acc:
-            while True:
-                try:
-                    transfer_amount = float(input("Enter transfer amount: "))
-                    src_acc.withdraw(transfer_amount)
-                    self._record_transactions(
-                        src_number, "withdraw", transfer_amount)
-                    dst_acc.deposit(transfer_amount)
-                    self._record_transactions(
-                        dst_number, "deposit", transfer_amount)
-                    print(
-                        f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
-                    break
-                except ValueError as err:
-                    print(f"Transfer failed: {err}")
+            acc_pass = input("Enter your account password: ").strip()
+            if src_acc.verify_password(acc_pass):
+
+                while True:
+                    try:
+                        transfer_amount = float(
+                            input("Enter transfer amount: "))
+                        src_acc.withdraw(transfer_amount)
+                        self._record_transactions(
+                            src_number, "withdraw", transfer_amount)
+                        dst_acc.deposit(transfer_amount)
+                        self._record_transactions(
+                            dst_number, "deposit", transfer_amount)
+                        print(
+                            f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
+                        break
+                    except ValueError as err:
+                        print(f"Transfer failed: {err}")
+
+            else:
+                print("Access denied.")
         else:
             print("Accounts not found.")
 

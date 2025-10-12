@@ -2,40 +2,58 @@
     "accounts": [
         {
             "account_number": "1",
-            "holder_name": "sun",
-            "balance": 297.0,
+            "holder_name": "a",
+            "balance": 60.0,
             "account_type": "Saving",
-            "creation_date": "2024-10-11",
+            "creation_date": "2025-10-12",
+            "account_password": "$2b$12$LFrol2JZ0jBXx9IsSNRCSeqoCXfVVEbaja6b2CT2ymkvVZZ7MaIci",
             "interest_rate": 10.0,
-            "last_interest_date": "2025-10-11"
+            "last_interest_date": "2025-10-12"
         },
         {
             "account_number": "2",
-            "holder_name": "mon",
-            "balance": 230.0,
+            "holder_name": "b",
+            "balance": 70.0,
             "account_type": "Checking",
-            "creation_date": "2025-10-11",
+            "creation_date": "2025-10-12",
+            "account_password": "$2b$12$ZOdZBElvNnBIdRVUoZDzP.cSvBSZrIhyaNVDhHOIfa8HYsUzQ3n3e",
             "overdraft_limit": 100.0
+        },
+        {
+            "account_number": "3",
+            "holder_name": "c",
+            "balance": 140.0,
+            "account_type": "Saving",
+            "creation_date": "2025-10-12",
+            "account_password": "$2b$12$ePl9Lbw9WHRAcoPSbsAzLOE7czKDuwieHF4fkI83RBHtD0eExNBES",
+            "interest_rate": 20.0,
+            "last_interest_date": "2025-10-12"
         }
     ],
     "transactions": [
         {
             "account_number": "2",
-            "transaction_type": "withdraw",
-            "amount": 70.0,
-            "date": "2025-10-11"
-        },
-        {
-            "account_number": "1",
             "transaction_type": "deposit",
-            "amount": 70.0,
-            "date": "2025-10-11"
+            "amount": 20.0,
+            "date": "2025-10-12"
+        },
+        {
+            "account_number": "2",
+            "transaction_type": "withdraw",
+            "amount": 50.0,
+            "date": "2025-10-12"
         },
         {
             "account_number": "1",
-            "transaction_type": "interest",
-            "amount": 27.0,
-            "date": "2025-10-11"
+            "transaction_type": "withdraw",
+            "amount": 40.0,
+            "date": "2025-10-12"
+        },
+        {
+            "account_number": "3",
+            "transaction_type": "deposit",
+            "amount": 40.0,
+            "date": "2025-10-12"
         }
     ]
 }
