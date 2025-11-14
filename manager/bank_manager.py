@@ -190,8 +190,11 @@ class BankManager:
             grouped[acc.account_type].append(acc.to_dict())
 
         for acc_type, acc_list in grouped.items():
+            filtered_list = [{key: value for key, value in acc.items(
+            ) if key != "account_password"} for acc in acc_list]
+
             print(f"\n {acc_type} Accounts:")
-            print(tabulate(acc_list, headers="keys",
+            print(tabulate(filtered_list, headers="keys",
                   tablefmt="fancy_grid", colalign=("center", "left")))
 
     def delete_account(self):
