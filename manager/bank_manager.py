@@ -12,9 +12,9 @@ class BankManager:
     def __init__(self, accounts=None, transactions=None):
         self.accounts = accounts if accounts is not None else []
         self.transactions = transactions if transactions is not None else []
-        self.load_accounts()
+        self._load_accounts()
 
-    def load_accounts(self):
+    def _load_accounts(self):
         if self.FILE_PATH.exists():
             with open(self.FILE_PATH, 'r') as af:
                 try:
@@ -206,6 +206,8 @@ class BankManager:
             return
 
         self.accounts.remove(acc)
+        self.transactions = [
+            t for t in self.transactions if t['account_number'] != acc_number]
         print("Account successfully deleted.")
 
     def _record_transactions(self, acc_number, tran_type, amount):
