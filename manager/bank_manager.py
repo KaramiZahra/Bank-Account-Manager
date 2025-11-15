@@ -101,7 +101,6 @@ class BankManager:
     def _get_account(self, acc_number):
         return next((acc for acc in self.accounts if acc.account_number == acc_number), None)
 
-    @staticmethod
     def _requires_authentication(func):
         def wrapper(self, *args, **kwargs):
             acc_number = input("Enter your account number: ").strip()
@@ -144,41 +143,32 @@ class BankManager:
             except ValueError as err:
                 print(f"Withdraw failed: {err}")
 
-    def transfer(self):
-        src_number = input("Enter source account number: ").strip()
+    @_requires_authentication
+    def transfer(self, acc):
         dst_number = input("Enter destination account number: ").strip()
-
-        if src_number == dst_number:
+        if acc == dst_number:
             print("Source and destination accounts cannot be the same.")
             return
 
-        src_acc = self._get_account(src_number)
         dst_acc = self._get_account(dst_number)
-
-        if not src_acc or not dst_acc:
+        if not acc or not dst_acc:
             print("Accounts not found.")
             return
 
-        acc_pass = input("Enter your account password: ").strip()
-
-        if src_acc.verify_password(acc_pass):
-            while True:
-                try:
-                    transfer_amount = float(
-                        input("Enter transfer amount: "))
-                    src_acc.withdraw(transfer_amount)
-                    self._record_transactions(
-                        src_number, "withdraw", transfer_amount)
-                    dst_acc.deposit(transfer_amount)
-                    self._record_transactions(
-                        dst_number, "deposit", transfer_amount)
-                    print(
-                        f"Transfer successful. Source new balance: {src_acc.balance}. Destination new balance: {dst_acc.balance}")
-                    break
-                except ValueError as err:
-                    print(f"Transfer failed: {err}")
-        else:
-            print("Access denied.")
+        while True:
+            try:
+                transfer_amount = float(input("Enter transfer amount: "))
+                acc.withdraw(transfer_amount)
+                self._record_transactions(
+                    acc.account_number, "withdraw", transfer_amount)
+                dst_acc.deposit(transfer_amount)
+                self._record_transactions(
+                    dst_number, "deposit", transfer_amount)
+                print(
+                    f"Transfer successful. Source new balance: {acc.balance}. Destination new balance: {dst_acc.balance}")
+                break
+            except ValueError as err:
+                print(f"Transfer failed: {err}")
 
     def show_accounts(self):
         if not self.accounts:
