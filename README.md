@@ -24,9 +24,6 @@ A console-based banking system written in Python, supporting account management,
 - **Persistence**:
   - Accounts and transactions are saved in a JSON file (`accounts.json`) and loaded automatically.
 
-- **Interest Application**:
-  - Saving accounts earn annual interest automatically, recorded in transactions.
-
 ## Installation
 
 1. Clone the repository:
@@ -41,7 +38,7 @@ cd Bank-Account-Manager
 3. Install required dependencies:
 
 ```bash
-pip install tabulate bcrypt
+pip install -r requirements.txt
 ```
 
 ## Usage
@@ -49,7 +46,7 @@ pip install tabulate bcrypt
 Run the main script:
 
 ```bash
-python app.py
+python3 app.py
 ```
 
 Follow the menu prompts to interact with the app:
@@ -72,9 +69,15 @@ Follow the menu prompts to interact with the app:
 ```bash
 Bank-Account-Manager/
 │
-├── app.py              # Main Python script
-├── accounts.json       # Data storage
-└── README.md           # This documentation
+├── manager/
+    ├── __init__.py
+    ├── accounts.py
+    └── bank_manager.py
+├── app.py
+├── accounts.json
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
 ## Notes
