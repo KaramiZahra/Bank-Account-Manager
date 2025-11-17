@@ -101,6 +101,7 @@ class BankManager:
     def _get_account(self, acc_number):
         return next((acc for acc in self.accounts if acc.account_number == acc_number), None)
 
+    @staticmethod
     def _requires_authentication(func):
         def wrapper(self, *args, **kwargs):
             acc_number = input("Enter your account number: ").strip()
@@ -110,6 +111,9 @@ class BankManager:
                 return
 
             acc_pass = input("Enter your account password: ").strip()
+            if not acc_pass:
+                print("Password cannot be empty.")
+                return
             if not acc.verify_password(acc_pass):
                 print("Access denied.")
                 return
@@ -119,56 +123,50 @@ class BankManager:
 
     @_requires_authentication
     def deposit_amount(self, acc):
-        while True:
-            try:
-                amount = float(input("Enter deposit amount: "))
-                acc.deposit(amount)
-                print(f"Deposit successful. New balance: {acc.balance}")
-                self._record_transactions(
-                    acc.account_number, "deposit", amount)
-                break
-            except ValueError as err:
-                print(f"Deposit failed: {err}")
+        try:
+            amount = self._get_float("Enter deposit amount: ")
+            acc.deposit(amount)
+            print(f"Deposit successful. New balance: {acc.balance}")
+            self._record_transactions(
+                acc.account_number, "deposit", amount)
+        except ValueError as err:
+            print(f"Deposit failed: {err}")
 
     @_requires_authentication
     def withdraw_amount(self, acc):
-        while True:
-            try:
-                amount = float(input("Enter withdraw amount: "))
-                acc.withdraw(amount)
-                print(f"Withdraw successful. New balance: {acc.balance}")
-                self._record_transactions(
-                    acc.account_number, "withdraw", amount)
-                break
-            except ValueError as err:
-                print(f"Withdraw failed: {err}")
+        try:
+            amount = self._get_float("Enter withdraw amount: ")
+            acc.withdraw(amount)
+            print(f"Withdraw successful. New balance: {acc.balance}")
+            self._record_transactions(
+                acc.account_number, "withdraw", amount)
+        except ValueError as err:
+            print(f"Withdraw failed: {err}")
 
     @_requires_authentication
     def transfer(self, acc):
         dst_number = input("Enter destination account number: ").strip()
-        if acc == dst_number:
+        if acc.account_number == dst_number:
             print("Source and destination accounts cannot be the same.")
             return
 
         dst_acc = self._get_account(dst_number)
-        if not acc or not dst_acc:
-            print("Accounts not found.")
+        if not dst_acc:
+            print("Account not found.")
             return
 
-        while True:
-            try:
-                transfer_amount = float(input("Enter transfer amount: "))
-                acc.withdraw(transfer_amount)
-                self._record_transactions(
-                    acc.account_number, "withdraw", transfer_amount)
-                dst_acc.deposit(transfer_amount)
-                self._record_transactions(
-                    dst_number, "deposit", transfer_amount)
-                print(
-                    f"Transfer successful. Source new balance: {acc.balance}. Destination new balance: {dst_acc.balance}")
-                break
-            except ValueError as err:
-                print(f"Transfer failed: {err}")
+        try:
+            transfer_amount = self._get_float("Enter transfer amount: ")
+            acc.withdraw(transfer_amount)
+            self._record_transactions(
+                acc.account_number, "transfer out", transfer_amount)
+            dst_acc.deposit(transfer_amount)
+            self._record_transactions(
+                dst_number, "transfer in", transfer_amount)
+            print(
+                f"Transfer successful. Source new balance: {acc.balance}. Destination new balance: {dst_acc.balance}")
+        except ValueError as err:
+            print(f"Transfer failed: {err}")
 
     def show_accounts(self):
         if not self.accounts:
@@ -177,14 +175,13 @@ class BankManager:
 
         grouped = defaultdict(list)
         for acc in self.accounts:
-            grouped[acc.account_type].append(acc.to_dict())
+            data = acc.to_dict()
+            data.pop("account_password", None)
+            grouped[acc.account_type].append(data)
 
         for acc_type, acc_list in grouped.items():
-            filtered_list = [{key: value for key, value in acc.items(
-            ) if key != "account_password"} for acc in acc_list]
-
             print(f"\n {acc_type} Accounts:")
-            print(tabulate(filtered_list, headers="keys",
+            print(tabulate(acc_list, headers="keys",
                   tablefmt="fancy_grid", colalign=("center", "left")))
 
     def delete_account(self):
@@ -215,12 +212,14 @@ class BankManager:
               tablefmt="fancy_grid", colalign=("center", "left")))
 
     def search_account(self):
-        query = input("Enter holder name: ").strip()
+        query = input("Enter holder name: ").strip().lower()
         found = False
 
         for acc in self.accounts:
-            if acc.holder_name.lower().startswith(query):
-                print(tabulate([acc.to_dict()], headers="keys",
+            if query in acc.holder_name.lower():
+                data = acc.to_dict()
+                data.pop("account_password", None)
+                print(tabulate([data], headers="keys",
                       tablefmt="fancy_grid", colalign=("center", "left")))
                 found = True
 
